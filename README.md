@@ -1,124 +1,156 @@
-Inspire Data API Project
+# 🎇 Inspire Data API Project
 
-Overview
-This project provides a set of APIs to fetch data from the InspireHEP database. It allows users to retrieve documents by different identifier types, and access single records based on their IDs. The APIs are built using Django REST Framework and follow standard practices for RESTful APIs.
+This project provides a set of RESTful APIs to fetch data from the [InspireHEP](https://inspirehep.net/) database. These APIs allow users to retrieve documents by various identifier types (e.g., literature, jobs, conferences) and fetch single records based on their unique IDs. The APIs are built using **Django REST Framework** and adhere to standard best practices for RESTful API development.
 
-Installation
-Prerequisites
-Python 3.10
+## 🚀 Features
 
+- Retrieve InspireHEP documents by identifier types (e.g., literature, jobs, conferences, seminars).
+- Search within specific categories with custom query parameters.
+- Fetch a single record based on its unique ID.
 
-Setup
-Clone the repository:
+---
 
-git clone <repo>
-cd inspire-data-api
+## 🛠️ Installation
 
-Create virual envirionment
-python -m venv venv
-Activate virual envirionment
-source venv/bin/activate
+### Prerequisites
 
+- **Python 3.11**
+- **ElasticSearch**
 
-Install the required packages:
+### Setup
 
-pip install -r requirements.txt
+1. Clone the repository:
 
-Rename .temp_env to .env
+   ```bash
+   git clone <repo>
+   ```
 
-Run the server:
+2. Create a virtual environment:
 
-python manage.py runserver
+   ```bash
+   python -m venv venv
+   ```
 
+3. Activate the virtual environment:
 
+   - **macOS/Linux:**
+     ```bash
+     source venv/bin/activate
+     ```
+   - **Windows:**
+     ```bash
+     venv\Scripts\activate
+     ```
 
-API Endpoints
-1. Fetch Inspire Data
-Endpoint: /api/insert-data/<identifier_type>/
+4. Install the required packages:
 
-Method: GET
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Parameters:
+5. Rename `.temp_env` to `.env` and configure environment variables as needed.
 
-identifier_type (string): The type of identifier to fetch data for (e.g., literature, jobs, conferences, seminars).
-Response:
+6. Run the development server:
+   ```bash
+   python manage.py runserver
+   ```
 
-200 OK: Insert the fetched data.
-400 Bad Request: Returns an error message if an error occurs.
+---
 
-Success Response
+## 📖 API Endpoints
+
+### 1. Insert Inspire Data To ElasticSearch
+
+- **Endpoint:** `/api/insert-data/<identifier_type>/`
+- **Method:** `GET`
+- **Parameters:**
+  - `identifier_type` (string): The type of identifier to fetch data for (e.g., literature, jobs, conferences, seminars).
+- **Response:**
+  - `200 OK`: Successfully inserted the fetched data.
+  - `400 Bad Request`: Error with an appropriate message.
+
+**Success Response:**
+
+```json
 {
-    "success": "Bulk insert successful!"
+  "success": "Bulk insert successful!"
 }
+```
 
+---
 
+### 2. Search Category Documents
 
-2. Search Category Documents
-Endpoint: /api/documents/<<identifier_type>>/
+- **Endpoint:** `/api/documents/<identifier_type>/`
+- **Method:** `GET`
+- **Parameters:**
+  - `identifier_type` (string): The identifier to search within (e.g., literature, jobs, conferences, seminars).
+  - `q` (optional, string): The query string for searching documents.
+  - `sort` (optional, string): The sorting criteria for the results.
+  - `size` (optional, integer): Number of results to return (default is 10).
+- **Response:**
+  - `200 OK`: Returns the search results.
+  - `400 Bad Request`: Error message in case of failure.
 
-Method: GET
+**Example Request:**
 
-Parameters:
-
-identifier_type (string): The Identifier to search within (e.g., literature, jobs, conferences, seminars).
-q (optional, string): The query string for searching documents.
-sort (optional, string): The sorting criteria for the results.
-size (optional, integer): The number of results to return (default is 10).
-Response:
-
-200 OK: Returns the search results.
-400 Bad Request: Returns an error message if an error occurs.
-Example Request:
-
+```bash
 GET /api/documents/literature/?q=abstracts.source:Springer&sort=asc&size=5
+```
 
-Response type:
+**Response Example:**
 
+```json
 [
-    {
-        "_index": "inspire_hep_literature",
-        "_id": "1482166",
-        "_score": null,
-        "_ignored": [
-            "metadata.abstracts.value.keyword",
-            "metadata.references.reference.misc.keyword"
-        ],
-        "_source": {
-
-        }
-    }
-]
-
-
-3. Retrieve Single Record by ID
-Endpoint: /api/identifier-by-id/<identifier_type>/<id>/
-
-Method: GET
-
-Parameters:
-
-identifier_type (string): The Identifier to search within (e.g., literature, jobs, conferences, seminars)..
-id (string): The ID of particular Identifier.
-Response:
-
-200 OK: Returns the details of the single record.
-400 Bad Request: Returns an error message if an error occurs.
-Example Request:
-
-GET /api/identifier-by-id/literature/123456
-
-
-{
+  {
     "_index": "inspire_hep_literature",
-    "_id": "1811940",
-    "_version": 3,
-    "_seq_no": 20,
-    "_primary_term": 1,
-    "found": true,
-    "_source": {
-    }
+    "_id": "1482166",
+    "_source": {}
+  }
+]
+```
+
+---
+
+### 3. Retrieve Single Record by ID
+
+- **Endpoint:** `/api/identifier-by-id/<identifier_type>/<id>/`
+- **Method:** `GET`
+- **Parameters:**
+  - `identifier_type` (string): The identifier category (e.g., literature, jobs, conferences, seminars).
+  - `id` (string): The unique ID of the record to retrieve.
+- **Response:**
+  - `200 OK`: Returns the details of the single record.
+  - `400 Bad Request`: Error message if the record is not found.
+
+**Example Request:**
+
+```bash
+GET /api/identifier-by-id/literature/123456
+```
+
+**Success Response:**
+
+```json
+{
+  "_index": "inspire_hep_literature",
+  "_id": "1811940",
+  "found": true,
+  "_source": {}
 }
+```
 
-Error Handling
-In case of errors, the API will return a JSON object with an "error" key containing the error message and an appropriate HTTP status code.
+---
 
+## ⚠️ Error Handling
+
+In case of errors, the API will return a JSON object with an `error` key containing the error message, along with the appropriate HTTP status code. Here's an example:
+
+```json
+{
+  "error": "Invalid identifier type",
+  "status_code": 400
+}
+```
+
+---
