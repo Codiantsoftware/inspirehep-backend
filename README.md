@@ -22,7 +22,7 @@ This project provides a set of RESTful APIs to fetch data from the [InspireHEP](
 1. Clone the repository:
 
    ```bash
-   git clone <repo>
+   git clone https://github.com/Codiantsoftware/inspirehep-backend.git
    ```
 
 2. Create a virtual environment:
